@@ -34,4 +34,10 @@ for driver in libcloud.compute.drivers.__all__:
 			continue
 
 		# Get the spec for __init__ ..
-		print inspect.getargspec( getattr( member_val, "__init__" ) )
+		arg_spec = inspect.getargspec( getattr( member_val, "__init__" ) )
+
+		# Quick hack. See LIBCLOUD-405 for why this exists.
+		if len( arg_spec[0] ) == 1:
+			continue
+
+		print "{0} - {1}".format( driver, member_name )
