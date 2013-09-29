@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import sys
+import re
 
 import libcloud
 import libcloud.compute
@@ -29,4 +30,8 @@ for driver in libcloud.compute.drivers.__all__:
 	for member_name, member_val in inspect.getmembers( sys.modules[module_path], inspect.isclass ):
 
 		# Regex match for /NodeDriver$/ ..
-		print "I have member name of {0}".format( member_name )
+		if not re.match( ".*NodeDriver$", member_name ):
+			continue
+
+		# Get the spec for __init__ ..
+		print inspect.getargspec( getattr( member_val, "__init__" ) )
