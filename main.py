@@ -19,28 +19,28 @@ def get_argspecs( what ):
 	"""
 	Iterate through the particular drivers.
 
-	what can currently be 'compute', 'dns', 'loadbalancer', or 'storage'
+	what can currently be
+		'compute'
+		'dns'
+		'loadbalancer'
+		'storage'
 	"""
 	_return = [ ]
 
-	# Import the particular module and drivers.
+	# Import the base module and the drivers.
 	importlib.import_module( "libcloud.{0}".format(what) )
 	importlib.import_module( "libcloud.{0}.drivers".format(what) )
 
-	# Iterate through all available drivers.
-	# Note that we cannot rely on libcloud.#{what}.drivers.__all__ because the
-	# dns packages does not populate it.
+	_drivers = __import__( "libcloud.{0}.drivers".format(what), globals(), locals(), [ "*" ] )
+	
+	for driver_name,driver_obj in _drivers.__dict__.items():
 
-	for driver in sys.modules["libcloud.{0}.drivers".format(what)].__all__:
-		
-		# Since the path isn't going to change, generate it once.
-		module_path = "libcloud.compute.drivers.{0}".format(driver)
+		print driver_name
 
-		# Import the module by name. This will add it to sys.modules.
-		importlib.import_module( module_path )
+		if not "libcloud.{0}.drivers.{1}".format(what,driver_name) in sys.modules:
+			continue
 
-		# Iterate over the classes of the compute module.
-		for member_name, member_val in inspect.getmembers( sys.modules[module_path], inspect.isclass ):
+		for member_name, member_val in inspect.getmembers( driver_obj, inspect.isclass ):
 
 			# Regex match for /.*NodeDriver$/ ..
 			if not re.match( ".*NodeDriver$", member_name ):
@@ -53,8 +53,10 @@ def get_argspecs( what ):
 			if len( arg_spec[0] ) == 1:
 				continue
 
-			_return.append( driver )
+			print "I have {0}.{1}".format( driver_name, member_name )
+
 	return _return
 
-print get_argspecs( "compute" )
-print get_argspecs( "dns" )
+#print get_argspecs( "compute" )
+#print get_argspecs( "dns" )
+print get_argspecs( "loadbalancer" )
